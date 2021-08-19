@@ -16,3 +16,5 @@ Setup by [Saif Ali](https://github.com/astroboy07), 2021
 * `$ git clone https://gitlab.com/gpagano/lensinggw.git`
 * `$ cd lensinggw`
 * `$ python setup.py install`
+
+3. `python>=3.7`
