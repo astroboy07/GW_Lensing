@@ -10,3 +10,9 @@ Setup by [Saif Ali](https://github.com/astroboy07), 2021
 * `$ git clone https://github.com/gipagano/lenstronomy.git`
 * `$ cd lenstronomy`
 * `$ python setup.py install`
+
+2. Install `lensinggw`
+* `$ cd ..`
+* `$ git clone https://gitlab.com/gpagano/lensinggw.git`
+* `$ cd lensinggw`
+* `$ python setup.py install`
