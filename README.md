@@ -12,7 +12,7 @@ Setup by [Saif Ali](https://github.com/astroboy07), 2021
 * `$ python setup.py install`
 
 2. Install `lensinggw`
-* """$ cd .."""
+* ```$ cd ..```
 * `$ git clone https://gitlab.com/gpagano/lensinggw.git`
 * `$ cd lensinggw`
 * `$ python setup.py install`
