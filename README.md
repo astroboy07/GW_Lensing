@@ -7,6 +7,6 @@ Setup by [Saif Ali](https://github.com/astroboy07), 2021
 ## Requirements
 
 1. Install a [forked version of lenstronomy](https://github.com/gipagano/lenstronomy).
-> `$ git clone https://github.com/gipagano/lenstronomy.git`
-> `$ cd lenstronomy`
-> `$ python setup.py install`
+* `$ git clone https://github.com/gipagano/lenstronomy.git`
+* `$ cd lenstronomy`
+* `$ python setup.py install`
