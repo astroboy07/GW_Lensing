@@ -1,0 +1,4 @@
+#!/Users/saifali/Desktop/gwlensing/.my_env/bin/python
+# EASY-INSTALL-SCRIPT: 'lalsuite==7.0.1.dev20210819','lalapps_make_nr_hdf_catalog'
+__requires__ = 'lalsuite==7.0.1.dev20210819'
+__import__('pkg_resources').run_script('lalsuite==7.0.1.dev20210819', 'lalapps_make_nr_hdf_catalog')
