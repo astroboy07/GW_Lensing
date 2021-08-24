@@ -1,14 +1,15 @@
 # This script illustrates how to use lensingGW to solve a binary point mass lens model, assuming radians
 
 import numpy as np
+from lensinggw.postprocess.postprocess import plot_images
 
 # coordinates, first define them in scaled units [x (radians) /thetaE_tot]
-y0,y1 = 0.1,0.5*np.sqrt(3)  
+y0,y1 = 0., 0. 
 l0,l1 = 0.5,0.  
 
 # redshifts                                                                                                                  
-zS = 2.0 
-zL = 0.5  
+zS = 1.0 
+zL = 0.25  
 
 # masses 
 mL1  = 100                                                                   
@@ -64,3 +65,17 @@ F = geometricalOpticsMagnification(dummy_frequencies,
                                    kwargs_lens_list)
 
 print('Geometrical optics amplification factor:', F)
+
+plot_images(output_folder = '/Users/saifali/Desktop/gwlensing/plots/', 
+            file_name = 'test_plot_images_point_mass',
+            source_pos_x = beta0,
+            source_pos_y = beta1,
+            lens_model_list = lens_model_list,
+            kwargs_lens_list = kwargs_lens_list,
+            ImgRA = Img_ra,
+            ImgDEC = Img_dec,
+            Mu = mus,
+            Td = tds,
+            xlabel = 'ra(rad)',
+            ylabel = 'dec(rad)'
+            ) 

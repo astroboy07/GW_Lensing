@@ -5,7 +5,10 @@ from lensinggw.utils.utils import param_processing # required for converting coo
 from lensinggw.solver.images import microimages, OneDeflector
 from lensinggw.utils.utils import TimeDelay, magnifications, getMinMaxSaddle
 from lensinggw.amplification_factor.amplification_factor import geometricalOpticsMagnification
+from lensinggw.postprocess.postprocess import plot_images
 
+
+plot_path = '/Users/saifali/Desktop/gwlensing/plots/'
 class gwlens_class():
 
     def __init__(self, params = None):
@@ -42,11 +45,11 @@ class gwlens_class():
 
         return np.array([self.l0 * self.thetaE(), self.l1 * self.thetaE()])
 
-    def lens_model(self, e1 = 0.1, e2 = 0.1):
+    def lens_model(self, e1 = 0.2, e2 = -0.3):
         """ Refer to https://lenstronomy.readthedocs.io/en/latest/lenstronomy.LensModel.html for the available
         lens model in lenstronomy package. 
         """
-        lens_model_list = ['POINT_MASS']
+        lens_model_list = ['SIS']
         #kwargs_point_mass = {'center_x': self.eta()[0],'center_y': self.eta()[1], 'theta_E': self.thetaE(), 'e1': e1, 'e2': e2}
         kwargs_point_mass = {'center_x': self.eta()[0],'center_y': self.eta()[1], 'theta_E': self.thetaE()}
         kwargs_lens_list = [kwargs_point_mass] 
@@ -84,3 +87,20 @@ class gwlens_class():
         """ computes the morse indices of images
         """
         return getMinMaxSaddle(self.lens_model()[0], self.lens_model()[1], self.lens_model()[-2], self.lens_model()[-1])
+
+    def plot_img(self, plot_name, x_label = 'ra(rad)', y_label = 'dec(rad)'):
+        """ plots images with magnification, time delays, caustics and critical curves
+        """
+        plot_images(output_folder = plot_path, 
+                    file_name = plot_name,
+                    source_pos_x = self.beta()[0],
+                    source_pos_y = self.beta()[1],
+                    lens_model_list = self.lens_model()[-2],
+                    kwargs_lens_list = self.lens_model()[-1],
+                    ImgRA = self.lens_model()[0],
+                    ImgDEC = self.lens_model()[1],
+                    Mu = self.mu(),
+                    Td = self.tds(),
+                    xlabel = x_label,
+                    ylabel = y_label
+                    )                
