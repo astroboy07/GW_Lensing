@@ -17,7 +17,7 @@ class gwlens_class():
 
         assert type(self.params == dict)
 
-        # coordinates, first define them in scaled units [x (radians) /thetaE_tot]
+        # coordinates, first define them in scaled units [x (radians) / thetaE]
         # source coordinate
         self.y0 = params['y0'] 
         self.y1 = params['y1']
@@ -45,15 +45,19 @@ class gwlens_class():
 
         return np.array([self.l0 * self.thetaE(), self.l1 * self.thetaE()])
 
-    def lens_model(self, e1 = 0.2, e2 = -0.3):
+    def lens_model(self, e1 = 0.1, e2 = 0.1):
         """ Refer to https://lenstronomy.readthedocs.io/en/latest/lenstronomy.LensModel.html for the available
         lens model in lenstronomy package. 
         """
-        lens_model_list = ['SIS']
-        #kwargs_point_mass = {'center_x': self.eta()[0],'center_y': self.eta()[1], 'theta_E': self.thetaE(), 'e1': e1, 'e2': e2}
-        kwargs_point_mass = {'center_x': self.eta()[0],'center_y': self.eta()[1], 'theta_E': self.thetaE()}
-        kwargs_lens_list = [kwargs_point_mass] 
-        solver_kwargs = {'SearchWindowMacro': 4*self.thetaE(), 'Verbose': False} # size of the first macromodel grid
+        lens_model_list = ['SIE']
+        kwargs_lens_model = {'center_x': self.eta()[0],'center_y': self.eta()[1], 'theta_E': self.thetaE(), 'e1': e1, 'e2': e2}
+        #kwargs_point_mass = {'center_x': self.eta()[0],'center_y': self.eta()[1], 'theta_E': self.thetaE()}
+        kwargs_lens_list = [kwargs_lens_model] 
+        solver_kwargs = {'SearchWindowMacro': 4 * self.thetaE(), # size of the first macromodel grid
+                        'Verbose': False, 
+                        'PixelsMacro': 10**4,
+                        #'Optimization': True
+                        } 
 
         if len(lens_model_list) == 1:
             Img_ra, Img_dec, pixel_width = OneDeflector(source_pos_x = self.beta()[0], 
@@ -102,5 +106,8 @@ class gwlens_class():
                     Mu = self.mu(),
                     Td = self.tds(),
                     xlabel = x_label,
-                    ylabel = y_label
+                    ylabel = y_label,
+                    #mag_map = True,
+                    #compute_window_x = 10**-12,
+                    #compute_window_y = 10**-12
                     )                

@@ -4,12 +4,12 @@ import numpy as np
 from lensinggw.postprocess.postprocess import plot_images
 
 # coordinates, first define them in scaled units [x (radians) /thetaE_tot]
-y0,y1 = 0., 0. 
-l0,l1 = 0.5,0.  
+y0,y1 = 0.1, 0.5 * np.sqrt(3) 
+l0,l1 = 0.,0.  
 
 # redshifts                                                                                                                  
-zS = 1.0 
-zL = 0.25  
+zS = 2.0 
+zL = 0.5  
 
 # masses 
 mL1  = 100                                                                   
@@ -22,7 +22,7 @@ thetaE = param_processing(zL, zS, mL1)
 
 beta0,beta1 = y0*thetaE,y1*thetaE                                                 
 eta10,eta11 = l0*thetaE,l1*thetaE                                                                                                
-eta20,eta21 = -l0*thetaE,l1*thetaE  
+#eta20,eta21 = -l0*thetaE,l1*thetaE  
 
 # lens model
 lens_model_list     = ['POINT_MASS'] 
@@ -36,10 +36,10 @@ from lensinggw.solver.images import microimages
 solver_kwargs = {'SearchWindowMacro': 4*thetaE}   
 
 Img_ra, Img_dec, pixel_width  = microimages(source_pos_x    = beta0,
-                                                                       source_pos_y    = beta1,
-                                                                       lens_model_list = lens_model_list,
-                                                                       kwargs_lens     = kwargs_lens_list,
-                                                                       **solver_kwargs)                                                            
+                                            source_pos_y    = beta1,
+                                            lens_model_list = lens_model_list,
+                                            kwargs_lens     = kwargs_lens_list,
+                                            **solver_kwargs)                                                            
                                                                        
 # time delays, magnifications, Morse indices and amplification factor
 from lensinggw.utils.utils import TimeDelay, magnifications, getMinMaxSaddle
@@ -67,7 +67,7 @@ F = geometricalOpticsMagnification(dummy_frequencies,
 print('Geometrical optics amplification factor:', F)
 
 plot_images(output_folder = '/Users/saifali/Desktop/gwlensing/plots/', 
-            file_name = 'test_plot_images_point_mass',
+            file_name = 'test_plot_point_mass',
             source_pos_x = beta0,
             source_pos_y = beta1,
             lens_model_list = lens_model_list,
