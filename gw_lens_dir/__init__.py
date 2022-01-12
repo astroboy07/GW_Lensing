@@ -2,3 +2,4 @@ from gw_lens_dir.lens_model import gwlens_class
 from gw_lens_dir.L_unlensed import Lunlensed
 from gw_lens_dir.overlap_lensing_changed_param import overlap_dual_ann_lensing
 from gw_lens_dir.overlap_lensing_geo_wave import overlap_dual_ann_lensing_geo_wave
+from gw_lens_dir.overlap_lensing_sis import overlap_sis

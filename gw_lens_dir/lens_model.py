@@ -54,9 +54,10 @@ class gwlens_class():
         #kwargs_point_mass = {'center_x': self.eta()[0],'center_y': self.eta()[1], 'theta_E': self.thetaE()}
         kwargs_lens_list = [kwargs_lens_model] 
         solver_kwargs = {'SearchWindowMacro': 4 * self.thetaE(), # size of the first macromodel grid
-                        'Verbose': False, 
+                        'Verbose': False,
+                        'OnlyMacro': True, 
                         'PixelsMacro': 10**4,
-                        #'Optimization': True
+                        'Optimization': True
                         } 
 
         if len(lens_model_list) == 1:

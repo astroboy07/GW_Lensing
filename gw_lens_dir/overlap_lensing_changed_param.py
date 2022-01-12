@@ -265,14 +265,14 @@ class overlap_dual_ann_lensing():
         deno_temp_1, deno_temp_err_1 = quad(
             self.integrand_2,
             self.limit(self.params_source, self.params_temp)[0], 
-            self.limit(self.params_source, self.params_temp)[3], 
+            self.limit(self.params_source, self.params_temp)[2], 
             args = (t_c, phi_c)
         )
 
         deno_temp_2, deno_temp_err_2 = quad(
             self.integrand_3,
             self.limit(self.params_source, self.params_temp)[0], 
-            self.limit(self.params_source, self.params_temp)[2], 
+            self.limit(self.params_source, self.params_temp)[3], 
             args = (t_c, phi_c)
         )
         num = 4 * np.real(num_temp)
