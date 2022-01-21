@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+
+
+
 from matplotlib import markers
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter, FormatStrFormatter
 from matplotlib.ticker import StrMethodFormatter, NullFormatter
+dirName = "/Users/saifali/Desktop/gwlensing/SIE_glafic/sie_plots/"
 
 mpl.rcParams['font.family'] = 'sans-serif'
 mpl.rcParams['pdf.fonttype'] = 42
@@ -43,6 +47,7 @@ iy2 = data[: ,5]
 sx2 = data[: ,6]
 sy2 = data[: ,7]
 
+
 rfile = 'out_mesh.dat'
 data = np.loadtxt(rfile, comments = '#')
 
@@ -54,6 +59,8 @@ ix4 = data[: ,4]
 iy4 = data[: ,5]
 sx4 = data[: ,6]
 sy4 = data[: ,7]
+
+
 
 rfile = 'out_point.dat'
 data = np.loadtxt(rfile, comments = '#')
@@ -113,7 +120,9 @@ plt.subplots_adjust(top = 0.95)
 plt.subplots_adjust(bottom = 0.15)
 plt.subplots_adjust(left = 0.15)
 
-ofile = 'plot_point'
+ofile = 'plot_point_0.05'
 
-#plt.savefig(ofile + '.png', dpi = 150, transparent = True)
-plt.savefig(ofile + '.pdf', bbox_inches = 'tight')
+#plt.savefig(dirName + ofile + '.png', dpi = 150)
+plt.savefig(dirName + ofile + '.pdf', bbox_inches = 'tight')
+
+#plot_points()

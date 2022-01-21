@@ -13,21 +13,24 @@ xmax	  5.000000
 ymax	  5.000000
 pix_ext   0.200000
 pix_poi   3.000000
-maxlev	  7
+maxlev	 7
 
 
-# Configures lensed system with flags for substitution
+## define lenses and sources
 startup 1 0 1
 **SIE**
 **POINT**
 end_startup
 
-
-
 ## execute commands
-start_command
+start_command 
+#writetd_point
 findimg
+calcmr
 writecrit 1.0
 writemesh 1.0
+calcein2 1.0 0.0 0.0 1
+writetd_point
 
 quit
+
