@@ -2,8 +2,10 @@ import subprocess
 import numpy as np
 from numpy.lib.utils import source
 import pandas as pd
+pd.set_option('display.float_format', lambda x: '%.3e' % x)
 
 datadirName = "/Users/saifali/Desktop/gwlensing/SIE_glafic/data/"
+plotdirName = "/Users/saifali/Desktop/gwlensing/SIE_glafic/sie_plots/"
 # RUN GLAFIC  
 def run_glafic(values):
 
@@ -43,21 +45,17 @@ def magnifications(values):
         # mu_1, mu_2, mu_3, mu_4, td_1, td_2, td_3, td_4
         return output[1, 2], output[2, 2], output[3, 2], output[4, 2], output[1, 3], output[2, 3], output[3, 3], output[4, 3]
     else:
-        return output[1, 0], output[1, 1], output[2, 0], output[2, 1], output[1, 2], output[2, 2], output[1, 3], output[2, 3]
-    # else:
-    #     # mu_1, mu_2, td_1, td_2
-    #     return output[1, 2], output[2, 2], output[1, 3], output[2, 3]
+        # mu_1, mu_2, td_1, td_2
+        return output[1, 2], output[2, 2], output[1, 3], output[2, 3]
     
 # PLOTTING FUNCTION
-def plots(values):
-    
+def plots(values, i):
     from matplotlib import markers
     import numpy as np
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     from matplotlib.ticker import ScalarFormatter, FormatStrFormatter
     from matplotlib.ticker import StrMethodFormatter, NullFormatter
-    plotdirName = "/Users/saifali/Desktop/gwlensing/SIE_glafic/sie_plots/"
 
     mpl.rcParams['font.family'] = 'sans-serif'
     mpl.rcParams['pdf.fonttype'] = 42
@@ -83,7 +81,7 @@ def plots(values):
     plt.rcParams['text.usetex'] = True
     plt.rcParams['text.latex.preamble'] = '\\usepackage{sfmath}'
 
-    rfile = 'out_crit.dat'
+    rfile = 'out_crit_'+ str(i)+'.dat'
     data = np.loadtxt(rfile, comments = '#')
 
     ix1 = data[: ,0]
@@ -110,7 +108,7 @@ def plots(values):
     '''
     
 
-    rfile = 'out_point.dat'
+    rfile = 'out_point_' + str(i) + '.dat'
     data = np.loadtxt(rfile, comments = '#')
 
     sxx = data[0, 2]
@@ -123,10 +121,10 @@ def plots(values):
     plt.subplot(2, 1, 1)
 
     #edited
-    xmin = -6
-    xmax = 6
-    ymin = -6
-    ymax = 6
+    xmin = -5e-4
+    xmax = 5e-4
+    ymin = -5e-4
+    ymax = 5e-4
 
     #plt.plot([ix3, ix4], [iy3, iy4], '-', color = 'grey', zorder = 0, lw = 0.5)
     plt.plot([ix1, ix2], [iy1, iy2], '-', color = 'blue', zorder = 1)
@@ -147,10 +145,10 @@ def plots(values):
     plt.subplot(2, 1, 2)
 
     #edited
-    xmin = -6
-    xmax = 6
-    ymin = -6
-    ymax = 6
+    xmin = -5e-4
+    xmax = 5e-4
+    ymin = -5e-4
+    ymax = 5e-4
 
     #plt.plot([sx3, sx4], [sy3, sy4], '-', color = 'grey', zorder = 0, lw = 0.5)
     plt.plot([sx1, sx2], [sy1, sy2], '-', color = 'blue', zorder = 1)
@@ -168,18 +166,19 @@ def plots(values):
     plt.subplots_adjust(bottom = 0.15)
     plt.subplots_adjust(left = 0.15)
 
-    ofile = 'plot_point_' + str('{0:.2g}'.format(values['source_y']))
+    ofile = 'plot_point_' + str(i)
 
-    plt.savefig(plotdirName + ofile + '.png', dpi = 150)
-    #plt.savefig(plotdirName + ofile + '.pdf', bbox_inches = 'tight')
+    #plt.savefig(plotdirName + ofile + '.png', dpi = 150)
+    plt.savefig(plotdirName + ofile + '.pdf', bbox_inches = 'tight')
     
+
 # GET THE RADIAL DISTANCES FOR THE CAUSTICS AT DIFFERENT POLAR ANGLES
 def radial_distance_caustics(values, theta):
     
     df_radial_distance = pd.DataFrame(columns=('radius', 'images_num'))
 
-    source_x_range = np.linspace(0.0, 1.2, 200)
-    source_y_range = np.linspace(0.0, 1.2, 200)
+    source_x_range = np.linspace(0.0, 2.2e-4, 200)
+    source_y_range = np.linspace(0.0, 2.2e-4, 200)
     images_num = np.zeros_like(source_x_range)
     radius = np.zeros_like(source_x_range)
 
@@ -196,7 +195,7 @@ def radial_distance_caustics(values, theta):
             values = initial_values
             values['source_x'] = source_x_range[i]
             values['source_y'] = source_y_range[i]
-            radius[i] = np.sqrt(source_x_range[i] ** 2 + source_y_range[i] ** 2)
+            radius[i] = np.sqrt(values['source_x'] ** 2 + values['source_y'] ** 2)
             images_num[i] = run_glafic(values)[0, 0]
             df_radial_distance.loc[i] = [radius[i], images_num[i]]
 
@@ -207,8 +206,18 @@ def radial_distance_caustics(values, theta):
             radius[i] = source_y_range[i]
             images_num[i] = run_glafic(values)[0, 0]
             df_radial_distance.loc[i] = [radius[i], images_num[i]]
+    
+    else:
+        for i in range(len(source_x_range)):
+            values = initial_values
+            values['source_x'] = source_x_range[i] 
+            values['source_y'] = source_x_range[i] * np.tan(float(theta) * (np.pi / 180))
+            radius[i] = np.sqrt(values['source_x'] ** 2 + values['source_y'] ** 2)
+            images_num[i] = run_glafic(values)[0, 0]
+            df_radial_distance.loc[i] = [radius[i], images_num[i]]
+        
 
-    print(np.c_[radius, images_num])    
+    print(np.c_[radius, images_num])
 
     return df_radial_distance.to_csv(datadirName + "radial_distance_caustics_" + str(theta) + ".csv", index = False)
 
@@ -227,7 +236,7 @@ def get_einstein_radius(values):
 
 
 initial_values = {'lens_z':0.5, 
-                'lens_sigma': 300.0, 
+                'lens_sigma': 4, 
                 'lens_x': 0.0, 
                 'lens_y': 0.0, 
                 'lens_ellip': 0.2, 
@@ -240,8 +249,10 @@ initial_values = {'lens_z':0.5,
 
 #print(run_glafic(initial_values))
 #print(magnifications(values = initial_values))
-#radial_distance_caustics(values = initial_values, theta = 0)
-#print(get_einstein_radius(values = initial_values))
+radial_distance_caustics(values = initial_values, theta = 90)
+#print(f'Einstein radius and mass inside it:{get_einstein_radius(values = initial_values)}')
+#plots(initial_values, 3)
+
 
 # FOR TWO IMAGES SYSTEM
 
@@ -250,55 +261,40 @@ def my_lin(lb, ub, steps, spacing = 3):
     dx = 1.0 / (steps-1)
     return np.array([lb + (i * dx) ** spacing * span for i in range(steps)])
 
-
-
+'''
 #source_x_range = np.linspace(0.16, 1.0, 15)
-source_x_range = my_lin(0.16, 1.0, 15)
-#df = pd.DataFrame(columns=('source_x', 'mu_1', 'mu_2', 'td_1', 'td_2'))
-df = pd.DataFrame(columns=('source_x', 'x_1', 'y_1', 'x_2', 'y_2', 'mu_1', 'mu_2', 'td_1', 'td_2'))
+source_x_range = np.linspace(0.3e-4, 1.9e-4, 10)
+df = pd.DataFrame(columns=('source_x', 'mu_1', 'mu_2', 'td_1', 'td_2'))
+#df = pd.DataFrame(columns=('source_x', 'x_1', 'y_1', 'x_2', 'y_2', 'mu_1', 'mu_2', 'td_1', 'td_2'))
 
 for i in range(len(source_x_range)):
     values = initial_values
     values['source_x'] = source_x_range[i]
-    df.loc[i] = [source_x_range[i], magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3],
-                magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]]
+    df.loc[i] = [source_x_range[i], magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3]]
     #plot = plots(values)
-df.to_csv(datadirName + "flux_twoimages_theta_0_w_postion.csv", index = False)
+df.to_csv(datadirName + "flux_twoimages_theta_0_trial.csv", index = False)
 print(df)
-
+'''
 
 '''
-#source_y_range = np.linspace(0.18, 0.9, 15)
-source_y_range = my_lin(0.18, 0.9, 15)
-#df = pd.DataFrame(columns=('source_y', 'mu_1', 'mu_2', 'td_1', 'td_2'))
-df = pd.DataFrame(columns=('source_y', 'x_1', 'y_1', 'x_2', 'y_2', 'mu_1', 'mu_2', 'td_1', 'td_2'))
+source_y_range = np.linspace(0.411e-4, 1.7e-4, 10)
+#source_y_range = my_lin(0.18, 0.9, 15)
+df = pd.DataFrame(columns=('source_y', 'mu_1', 'mu_2', 'td_1', 'td_2'))
+#df = pd.DataFrame(columns=('source_y', 'x_1', 'y_1', 'x_2', 'y_2', 'mu_1', 'mu_2', 'td_1', 'td_2'))
 for i in range(len(source_y_range)):
     values = initial_values
     values['source_y'] = source_y_range[i]
-    #df.loc[i] = [source_y_range[i] , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3]] 
-
-    if magnifications(values)[-2] != 0:
-        df.loc[i] = [source_y_range[i], magnifications(values)[2], magnifications(values)[3], magnifications(values)[0], magnifications(values)[1],
-                    magnifications(values)[5], magnifications(values)[4], magnifications(values)[7], magnifications(values)[6]]
-    else:
-        df.loc[i] = [source_y_range[i], magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3],
-                    magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]] 
-
-    # FOR THE FLIPPING IMAGES CASE
-    # if magnifications(values)[2] != 0:
-    #     df.loc[i] = [source_y_range[i], magnifications(values)[1], magnifications(values)[0], magnifications(values)[3], magnifications(values)[2]]
-    # else:
-    #     df.loc[i] = [source_y_range[i], magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3]] 
+    df.loc[i] = [source_y_range[i] , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3]]
     #plot = plots(values)
-df.to_csv(datadirName + "flux_twoimages_theta_90_w_position.csv", index = False)
+df.to_csv(datadirName + "flux_twoimages_theta_90.csv", index = False)
 print(df)
 '''
 
 '''
-#source_x_range = np.linspace(0.06, 0.7, 15)
-#source_y_range = np.linspace(0.06, 0.7, 15)
-source_x_range = my_lin(0.06, 0.7, 15)
-source_y_range = my_lin(0.06, 0.7, 15)
+source_x_range = np.linspace(0.2e-4, 1.2e-4, 10)
+source_y_range = np.linspace(0.2e-4, 1.2e-4, 10)
+#source_x_range = my_lin(0.06, 0.7, 15)
+#source_y_range = my_lin(0.06, 0.7, 15)
 df = pd.DataFrame(columns=('source_x', 'mu_1', 'mu_2', 'td_1', 'td_2'))
 
 for i in range(len(source_x_range)):
@@ -307,9 +303,12 @@ for i in range(len(source_x_range)):
     values['source_y'] = source_y_range[i]
     df.loc[i] = [source_x_range[i] * np.sqrt(2), magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3]]
     #plot = plots(values)
-df.to_csv(datadirName + "flux_twoimages_theta_45.csv", index = False)
+df.to_csv(datadirName + "flux_twoimages_theta_45_trial.csv", index = False)
 print(df)
 '''
+
+
+
 
 # FOR FOUR IMAGES SYSTEM
 
@@ -322,35 +321,42 @@ def my_lin(lb, ub, steps, spacing = 0.3):
 '''
 
 '''
-#source_x_range = np.linspace(0.01, 0.15, 15)
-source_x_range = my_lin(0.01, 0.15, 15)
+source_x_range = np.linspace(0.15e-4, 0.26e-4, 10)
+#source_x_range = my_lin(0.01, 0.15, 15)
 df = pd.DataFrame(columns=('source_x', 'mu_1', 'mu_2', 'mu_3', 'mu_4', 'td_1', 'td_2', 'td_3', 'td_4'))
 
 for i in range(len(source_x_range)):
     values = initial_values
     values['source_x'] = source_x_range[i]
-    # df.loc[i] = [source_x_range[i] , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3], 
-    #             magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]]
+    df.loc[i] = [source_x_range[i] , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3], 
+                 magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]]
+    
 
     # FOR FLIPPING IMAGES CASES (DONE MANUALLY)
-    if magnifications(values)[5] > magnifications(values)[6]:
-        df.loc[i] = [source_x_range[i] , magnifications(values)[0], magnifications(values)[2], magnifications(values)[1], magnifications(values)[3], 
-               magnifications(values)[4], magnifications(values)[6], magnifications(values)[5], magnifications(values)[7]]
+    # if magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[6] < magnifications(values)[4]:
+    #     df.loc[i] = [source_x_range[i] , magnifications(values)[1], magnifications(values)[2], magnifications(values)[3], magnifications(values)[0], 
+    #            magnifications(values)[5], magnifications(values)[6], magnifications(values)[7], magnifications(values)[4]]
 
-    elif magnifications(values)[5] > magnifications(values)[7]:
-        df.loc[i] = [source_x_range[i] , magnifications(values)[0], magnifications(values)[3], magnifications(values)[2], magnifications(values)[1], 
-               magnifications(values)[4], magnifications(values)[7], magnifications(values)[6], magnifications(values)[5]]
-    else:
-        df.loc[i] = [source_x_range[i] , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3], 
-               magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]]
-    plot = plots(values)
+    # if magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[6] > magnifications(values)[4]:
+    #     df.loc[i] = [source_x_range[i] , magnifications(values)[1], magnifications(values)[0], magnifications(values)[2], magnifications(values)[3], 
+    #            magnifications(values)[5], magnifications(values)[4], magnifications(values)[6], magnifications(values)[7]]
+
+    # elif magnifications(values)[7] == 0:
+    #     df.loc[i] = [source_x_range[i] , magnifications(values)[3], magnifications(values)[1], magnifications(values)[0], magnifications(values)[2], 
+    #            magnifications(values)[7], magnifications(values)[5], magnifications(values)[4], magnifications(values)[6]]
+    # else:
+    #     df.loc[i] = [source_x_range[i] , magnifications(values)[0], magnifications(values)[3], magnifications(values)[1], magnifications(values)[2], 
+    #            magnifications(values)[4], magnifications(values)[7], magnifications(values)[5], magnifications(values)[6]]  
+    
+      
+    #plot = plots(values)
 df.to_csv(datadirName + "flux_fourimages_theta_0.csv", index = False)
 print(df)
 '''
 
 '''
-source_x_range = my_lin(0.01, 0.05, 15)
-source_y_range = my_lin(0.01, 0.05, 15)
+source_x_range = np.linspace(0.9e-5, 0.1e-4, 10)
+source_y_range = np.linspace(0.9e-5, 0.1e-4, 10)
 df = pd.DataFrame(columns=('source_x', 'mu_1', 'mu_2', 'mu_3', 'mu_4', 'td_1', 'td_2', 'td_3', 'td_4'))
 
 for i in range(len(source_x_range)):
@@ -360,52 +366,56 @@ for i in range(len(source_x_range)):
     # df.loc[i] = [source_x_range[i] * np.sqrt(2) , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3],
     #             magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]]
 
-    if magnifications(values)[5] > magnifications(values)[6] and magnifications(values)[7] > magnifications(values)[6]:
-        df.loc[i] = [source_x_range[i] * np.sqrt(2) , magnifications(values)[0], magnifications(values)[2], magnifications(values)[3], magnifications(values)[1],
-                    magnifications(values)[4], magnifications(values)[6], magnifications(values)[7], magnifications(values)[5]]
-    elif magnifications(values)[6] > magnifications(values)[5] and magnifications(values)[6] > magnifications(values)[7]:
-        df.loc[i] = [source_x_range[i] * np.sqrt(2), magnifications(values)[0], magnifications(values)[3], magnifications(values)[1], magnifications(values)[2],
-                    magnifications(values)[4], magnifications(values)[7], magnifications(values)[5], magnifications(values)[6]]
+    
+    if magnifications(values)[6] > magnifications(values)[7]:
+        df.loc[i] = [source_x_range[i] * np.sqrt(2) , magnifications(values)[1], magnifications(values)[3], magnifications(values)[2], magnifications(values)[0],
+                    magnifications(values)[5], magnifications(values)[7], magnifications(values)[6], magnifications(values)[4]]
+    # elif magnifications(values)[6] > magnifications(values)[5] and magnifications(values)[6] > magnifications(values)[7]:
+    #     df.loc[i] = [source_x_range[i] * np.sqrt(2), magnifications(values)[0], magnifications(values)[3], magnifications(values)[1], magnifications(values)[2],
+    #                 magnifications(values)[4], magnifications(values)[7], magnifications(values)[5], magnifications(values)[6]]
     else:
-        df.loc[i] = [source_x_range[i] * np.sqrt(2), magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3],
-                    magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]]
+        df.loc[i] = [source_x_range[i] * np.sqrt(2), magnifications(values)[1], magnifications(values)[2], magnifications(values)[3], magnifications(values)[0],
+                    magnifications(values)[5], magnifications(values)[6], magnifications(values)[7], magnifications(values)[4]]
+    
         
     #plot = plots(values)
-df.to_csv(datadirName + "flux_fourimages_theta_45.csv", index = False)
+df.to_csv(datadirName + "flux_fourimages_theta_45_og.csv", index = False)
 print(df)
 '''
 
+
+
+
+
 '''
-#source_y_range = np.linspace(0.18, 0.9, 15)
-source_y_range = my_lin(0.01, 0.17, 15)
+source_y_range = np.linspace(0.2e-4, 0.3e-4, 10)
+#source_y_range = my_lin(0.01, 0.17, 15)
 df = pd.DataFrame(columns=('source_y', 'mu_1', 'mu_2', 'mu_3', 'mu_4', 'td_1', 'td_2', 'td_3', 'td_4'))
 for i in range(len(source_y_range)):
     values = initial_values
     values['source_y'] = source_y_range[i]
-    # df.loc[i] = [source_y_range[i] , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3],
-    #             magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]] 
+    df.loc[i] = [source_y_range[i] , magnifications(values)[0], magnifications(values)[1], magnifications(values)[2], magnifications(values)[3],
+                magnifications(values)[4], magnifications(values)[5], magnifications(values)[6], magnifications(values)[7]] 
     
     # FOR THE FLIPPING IMAGES CASE
-    if magnifications(values)[4] < magnifications(values)[5] and magnifications(values)[6] < magnifications(values)[5] and magnifications(values)[6] < magnifications(values)[7]:
-        df.loc[i] = [source_y_range[i] , magnifications(values)[0], magnifications(values)[2], magnifications(values)[3], magnifications(values)[1],
-                    magnifications(values)[4], magnifications(values)[6], magnifications(values)[7], magnifications(values)[5]]
-    elif magnifications(values)[4] < magnifications(values)[5] and magnifications(values)[6] < magnifications(values)[5] and magnifications(values)[7] < magnifications(values)[6]:
-        df.loc[i] = [source_y_range[i] , magnifications(values)[0], magnifications(values)[3], magnifications(values)[2], magnifications(values)[1],
-                    magnifications(values)[4], magnifications(values)[7], magnifications(values)[6], magnifications(values)[5]] 
-    elif magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[5] > magnifications(values)[6]:
-        df.loc[i] = [source_y_range[i] , magnifications(values)[2], magnifications(values)[3], magnifications(values)[1], magnifications(values)[0],
-                    magnifications(values)[6], magnifications(values)[7], magnifications(values)[5], magnifications(values)[4]] 
-    elif magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[5] < magnifications(values)[6] and magnifications(values)[6] > magnifications(values)[7]:
-        df.loc[i] = [source_y_range[i] , magnifications(values)[1], magnifications(values)[3], magnifications(values)[2], magnifications(values)[0],
-                    magnifications(values)[5], magnifications(values)[7], magnifications(values)[6], magnifications(values)[4]]
-    else:
-        df.loc[i] = [source_y_range[i] , magnifications(values)[1], magnifications(values)[2], magnifications(values)[3], magnifications(values)[0],
-                    magnifications(values)[5], magnifications(values)[6], magnifications(values)[7], magnifications(values)[4]]
+    # if magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[5] < magnifications(values)[6] and magnifications(values)[6] > magnifications(values)[7]:
+    #     df.loc[i] = [source_y_range[i] , magnifications(values)[3], magnifications(values)[1], magnifications(values)[2], magnifications(values)[0],
+    #                 magnifications(values)[7], magnifications(values)[5], magnifications(values)[6], magnifications(values)[4]]
+    # elif magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[5] > magnifications(values)[6]and magnifications(values)[6] > magnifications(values)[7]:
+    #     df.loc[i] = [source_y_range[i] , magnifications(values)[3], magnifications(values)[2], magnifications(values)[1], magnifications(values)[0],
+    #                 magnifications(values)[7], magnifications(values)[6], magnifications(values)[5], magnifications(values)[4]] 
+    # elif magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[5] > magnifications(values)[6] and magnifications(values)[6] < magnifications(values)[7] and magnifications(values)[5] > magnifications(values)[7]:
+    #     df.loc[i] = [source_y_range[i] , magnifications(values)[2], magnifications(values)[3], magnifications(values)[1], magnifications(values)[0],
+    #                 magnifications(values)[6], magnifications(values)[7], magnifications(values)[5], magnifications(values)[4]] 
+    # elif magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[5] < magnifications(values)[6] and magnifications(values)[6] < magnifications(values)[7]:
+    #     df.loc[i] = [source_y_range[i] , magnifications(values)[1], magnifications(values)[2], magnifications(values)[3], magnifications(values)[0],
+    #                 magnifications(values)[5], magnifications(values)[6], magnifications(values)[7], magnifications(values)[4]]
+    # elif magnifications(values)[4] > magnifications(values)[5] and magnifications(values)[5] > magnifications(values)[6] and magnifications(values)[6] < magnifications(values)[7] and magnifications(values)[5] < magnifications(values)[7]:
+    #     df.loc[i] = [source_y_range[i] , magnifications(values)[2], magnifications(values)[1], magnifications(values)[3], magnifications(values)[0],
+    #                 magnifications(values)[6], magnifications(values)[5], magnifications(values)[7], magnifications(values)[4]]
     #plot = plots(values)
 df.to_csv(datadirName + "flux_fourimages_theta_90.csv", index = False)
 print(df)
 '''
-
-
 
 

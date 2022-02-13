@@ -24,7 +24,7 @@ class Lunlensed():
         self.phi_c = params['phi_c'] 
 
         self.F_MIN = 20
-        self.tc = self.get_tc()
+        self.tc = params['tc']
         
 
     def mass_conv(self):
@@ -191,7 +191,10 @@ class Lunlensed():
     def get_tc(self):
         """Solving eqn 3.10 of Cutler and Flanagan for t=0 at f=f_min=20 Hz
         """
-        x = np.power(np.pi * self.mass_conv() * self.F_MIN, 2 / 3)
-        coeffs = 5 * np.power(8 * np.pi * self.F_MIN, -8 / 3) * np.power(self.mcz, -5 / 3)
+        upper_limit = 1/(np.power(6, 3/2) * np.pi * self.mass_conv())
+        F = upper_limit
+        #F = 20
+        x = np.power(np.pi * self.mass_conv() * F, 2 / 3)
+        coeffs = 5 * np.power(8 * np.pi * F, -8 / 3) * np.power(self.mcz, -5 / 3)
         terms = 1 + 4 / 3 * (743 / 336 + (11 * self.eta) / 4) * x - (32 * np.pi) / 5 * np.power(x, 3 / 2)
-        return coeffs * terms
+        return self.tc - coeffs * terms, upper_limit
