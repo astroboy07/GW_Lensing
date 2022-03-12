@@ -299,7 +299,7 @@ initial_params_source = {
     'phi_s_source' : 0.0, 
     'theta_l_source' : 0.0, 
     'phi_l_source' : 0.0, 
-    'mcz_source' : 28.79 * solar_mass, 
+    'mcz_source' : 18.79 * solar_mass, 
     'dist_source': 1.58 * giga_parsec, 
     'eta_source' : 0.25, 
     't0' : 0.0, 
@@ -313,7 +313,7 @@ initial_params_template = {
     'phi_s_temp' : 0.0, 
     'theta_l_temp' : 0.0, 
     'phi_l_temp' : 0.0, 
-    'mcz_temp' : 28.79 * solar_mass, 
+    'mcz_temp' : 18.79 * solar_mass, 
     'dist_temp': 1.58 * giga_parsec, 
     'eta_temp' : 0.25, 
     #'tc' : 0.0, 
@@ -351,7 +351,7 @@ if __name__ == "__main__":
     for proc in processes:
         proc.join()
 
-    w = csv.writer(open(datPath + "overlap_lensing_td_I=0.4_mcz=28.79.csv", "w"))
+    w = csv.writer(open(datPath + "overlap_lensing_td_I=0.4_mcz=18.79.csv", "w"))
     for key, value in return_dict.items():
         w.writerow([key, value])
     

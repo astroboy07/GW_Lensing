@@ -45,7 +45,7 @@ class gwlens_class():
 
         return np.array([self.l0 * self.thetaE(), self.l1 * self.thetaE()])
 
-    def lens_model(self, e1 = 0.1, e2 = 0.1):
+    def lens_model(self, e1 = 0.11, e2 = 0):
         """ Refer to https://lenstronomy.readthedocs.io/en/latest/lenstronomy.LensModel.html for the available
         lens model in lenstronomy package. 
         """
@@ -56,8 +56,8 @@ class gwlens_class():
         solver_kwargs = {'SearchWindowMacro': 4 * self.thetaE(), # size of the first macromodel grid
                         'Verbose': False,
                         'OnlyMacro': True, 
-                        'PixelsMacro': 10**4,
-                        'Optimization': True
+                        #'PixelsMacro': 10**4,
+                        #'Optimization': True
                         } 
 
         if len(lens_model_list) == 1:

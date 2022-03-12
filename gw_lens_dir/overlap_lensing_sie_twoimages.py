@@ -53,8 +53,8 @@ class overlap_sie():
 
         self.DAY = 86400 #[day] = sec
         
-        data = dirName + 'flux_twoimages_theta_0.csv'
-        df = pd.read_csv(data,)
+        data = dirName + 'flux_twoimages_theta_0_sigma=5_sorted.csv'
+        df = pd.read_csv(data)
         df = pd.read_csv(data, float_precision = 'round_trip')
         #np.set_printoptions(precision=3)
         self.radius_data = np.array(df['source_x'])
@@ -192,23 +192,8 @@ class overlap_sie():
         index_radius = np.where(self.radius_data == self.radius)
         mu_1 = self.mu_1_data[index_radius]
         mu_2 = self.mu_2_data[index_radius]
-        td_1 = self.td_1_data[index_radius] * self.DAY
-        td_2 = self.td_2_data[index_radius] * self.DAY
-        
-        #sigma = 100
-        # mu_1 = 2.26
-        # mu_2 = 1.09
-        # td_2 = 2.2 * day
-
-        #sigma = 300
-        # mu_1 = 4.1632
-        # mu_2 = -176.0585
-        # td_2 = 45.385 * day 
-
-        #sigma = 4
-        # mu_1 = 1.852226e+00
-        # mu_2 = -1.588739e-01
-        # td_2 = 9.077089e-06 * day        
+        td_1 = self.td_1_data[index_radius] 
+        td_2 = self.td_2_data[index_radius] 
         
         F_source_sie = np.sqrt(np.abs(mu_1)) - 1j * np.sqrt(np.abs(mu_2)) * np.exp(2 * np.pi * 1j * f * td_2)
         
@@ -360,11 +345,15 @@ def my_lin(lb, ub, steps, spacing = 3):
 # WITHOUT MULTIPROCESSING
 if __name__ == "__main__":
     
-    df = pd.DataFrame(columns=('source_x', 'overlap', 'tc', 'phi_c'))
+    df_res = pd.DataFrame(columns=('source_x', 'overlap', 'tc', 'phi_c'))
 
     datPath = "/Users/saifali/Desktop/gwlensing/data/"
-    radius_range = np.linspace(0.3e-4, 1.9e-4, 10)
 
+    data = dirName + 'flux_twoimages_theta_0_sigma=5_sorted.csv'
+    df_data = pd.read_csv(data)
+    df_data = pd.read_csv(data, float_precision = 'round_trip')
+    radius_range = np.array(df_data['source_x'])
+    
     start = time.time()
     for i in range(len(radius_range)):
 
@@ -376,11 +365,11 @@ if __name__ == "__main__":
         bnds = [[-0.2, 0.2], [-np.pi, np.pi]]
         overlap_optimized = overlap_sie(params_source = params_source, params_temp = initial_params_template)
         overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, maxiter = 80)
-        df.loc[i] = [radius_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1]]
+        df_res.loc[i] = [radius_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1]]
         end = time.time()
         print(f'elapsed time: {(end - start)/60}')
-
-    df.to_csv(datPath + "overlap_lensing_sie_sigma=4_theta=0_niter=80.csv", index = False)
+    print(df_res)
+    df_res.to_csv(datPath + "overlap_lensing_sie_sigma=5_theta=0.csv", index = False)
     
 
 
