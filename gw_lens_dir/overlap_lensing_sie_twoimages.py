@@ -53,7 +53,7 @@ class overlap_sie():
 
         self.DAY = 86400 #[day] = sec
         
-        data = dirName + 'flux_twoimages_theta_0_sigma=5_sorted.csv'
+        data = dirName + 'flux_twoimages_theta_45_sigma=4_sorted.csv'
         df = pd.read_csv(data)
         df = pd.read_csv(data, float_precision = 'round_trip')
         #np.set_printoptions(precision=3)
@@ -349,7 +349,7 @@ if __name__ == "__main__":
 
     datPath = "/Users/saifali/Desktop/gwlensing/data/"
 
-    data = dirName + 'flux_twoimages_theta_0_sigma=5_sorted.csv'
+    data = dirName + 'flux_twoimages_theta_45_sigma=4_sorted.csv'
     df_data = pd.read_csv(data)
     df_data = pd.read_csv(data, float_precision = 'round_trip')
     radius_range = np.array(df_data['source_x'])
@@ -364,12 +364,12 @@ if __name__ == "__main__":
         params_source['radius'] = radius_range[i] 
         bnds = [[-0.2, 0.2], [-np.pi, np.pi]]
         overlap_optimized = overlap_sie(params_source = params_source, params_temp = initial_params_template)
-        overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, maxiter = 80)
+        overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, maxiter = 100)
         df_res.loc[i] = [radius_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1]]
         end = time.time()
         print(f'elapsed time: {(end - start)/60}')
     print(df_res)
-    df_res.to_csv(datPath + "overlap_lensing_sie_sigma=5_theta=0.csv", index = False)
+    df_res.to_csv(datPath + "overlap_lensing_sie_theta_45_sigma=4.csv", index = False)
     
 
 

@@ -192,8 +192,8 @@ class Lunlensed():
         """Solving eqn 3.10 of Cutler and Flanagan for t=0 at f=f_min=20 Hz
         """
         upper_limit = 1/(np.power(6, 3/2) * np.pi * self.mass_conv())
-        F = upper_limit
-        #F = 20
+        #F = upper_limit
+        F = 20
         x = np.power(np.pi * self.mass_conv() * F, 2 / 3)
         coeffs = 5 * np.power(8 * np.pi * F, -8 / 3) * np.power(self.mcz, -5 / 3)
         terms = 1 + 4 / 3 * (743 / 336 + (11 * self.eta) / 4) * x - (32 * np.pi) / 5 * np.power(x, 3 / 2)

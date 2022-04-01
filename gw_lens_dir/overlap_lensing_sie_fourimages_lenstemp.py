@@ -9,6 +9,7 @@ import multiprocessing
 import time
 import pickle
 import csv
+import heapq
 
 from sqlalchemy import over
 
@@ -55,7 +56,7 @@ class overlap_sie():
 
         self.DAY = 86400 #[day] = sec
         
-        data = dirName + 'flux_fourimages_theta_0_sigma=6_sorted_preproc.csv'
+        data = dirName + 'flux_fourimages_theta_60_sigma=6_sorted_preproc.csv'
         df = pd.read_csv(data)
         df = pd.read_csv(data, float_precision = 'round_trip')
         #np.set_printoptions(precision=3)
@@ -203,7 +204,8 @@ class overlap_sie():
         td_3 = self.td_3_data[index_radius] 
         td_4 = self.td_4_data[index_radius] 
 
-        if len([mu_1, mu_2, mu_3, mu_4]) == 1:
+        mu_arr = [mu_1[0], mu_2[0], mu_3[0], mu_4[0]]
+        if len(set(mu_arr)) == 2:
             F_source_sie = np.array([1])
         else:
             F_source_sie = np.sqrt(np.abs(mu_1)) * np.exp(2 * np.pi * 1j * f * td_1) + np.sqrt(np.abs(mu_2)) * np.exp(2 * np.pi * 1j * f * td_2) \
@@ -223,11 +225,42 @@ class overlap_sie():
         td_3 = self.td_3_data[index_radius] 
         td_4 = self.td_4_data[index_radius] 
 
-        if len([mu_1, mu_2, mu_3, mu_4]) == 1:
+        mu_arr = [mu_1[0], mu_2[0], mu_3[0], mu_4[0]]
+        td_arr = [td_1[0], td_2[0], td_3[0], td_4[0]]
+        # for zero image case
+        if len(set(mu_arr)) == 1:
             F_source_sie_temp = np.array([0])
+
+        # for one image case
+        elif len(set(mu_arr)) == 2:
+            F_source_sie_temp = np.array([1])
+
+        # for [1, 4] image pair case
+        elif mu_arr[0] != 0 and mu_arr[-1] != 0 and mu_arr[1] == mu_arr[2] == 0:
+            F_source_sie_temp = np.sqrt(np.abs(mu_1)) * np.exp(2 * np.pi * 1j * f * td_1) - 1j * np.sqrt(np.abs(mu_4)) * np.exp(2 * np.pi * 1j * f * td_4)
+
+        # for [3, 4] image pair case
+        elif mu_arr[-2] != 0 and mu_arr[-1] != 0 and mu_arr[0] == mu_arr[1] == 0:
+            F_source_sie_temp = np.sqrt(np.abs(mu_3)) * np.exp(2 * np.pi * 1j * f * td_3) - 1j * np.sqrt(np.abs(mu_4)) * np.exp(2 * np.pi * 1j * f * td_4)
+
+        # for [1, 2] image pair case
+        elif mu_arr[0] != 0 and mu_arr[1] != 0 and mu_arr[2] == mu_arr[3] == 0:
+            F_source_sie_temp = np.sqrt(np.abs(mu_1)) * np.exp(2 * np.pi * 1j * f * td_1) - 1j * np.sqrt(np.abs(mu_2)) * np.exp(2 * np.pi * 1j * f * td_2)
+           
+        # for [1, 2, 3, 4] case
         else:
-            F_source_sie_temp = np.sqrt(np.abs(mu_1)) * np.exp(2 * np.pi * 1j * f * td_1) - 1j * np.sqrt(np.abs(mu_2)) * np.exp(2 * np.pi * 1j * f * td_2) 
-        
+            mu_arr = np.array(mu_arr)
+            td_arr = np.array(td_arr)
+            mu_arr_abs = np.abs(mu_arr)
+            largest_mus = heapq.nlargest(2, mu_arr_abs)
+            index_1 = np.where(largest_mus[0] == mu_arr_abs)
+            index_2 = np.where(largest_mus[1] == mu_arr_abs)
+            mu_a = mu_arr[index_1]
+            mu_b = mu_arr[index_2]
+            td_a = td_arr[index_1]
+            td_b = td_arr[index_2]
+            F_source_sie_temp = np.sqrt(np.abs(mu_a))  - 1j * np.sqrt(np.abs(mu_b)) * np.exp(2 * np.pi * 1j * f * np.abs(td_b - td_a))
+
         return F_source_sie_temp[0]
 
     def Sn(self, f):
@@ -384,13 +417,13 @@ if __name__ == "__main__":
 
     datPath = "/Users/saifali/Desktop/gwlensing/data/"
 
-    data = dirName + 'flux_fourimages_theta_0_sigma=6_sorted_preproc.csv'
+    data = dirName + 'flux_fourimages_theta_60_sigma=6_sorted_preproc.csv'
     df_data = pd.read_csv(data)
     df_data = pd.read_csv(data, float_precision = 'round_trip')
     radius_range = np.array(df_data['source_x'])
     
     start = time.time()
-    for i in range(len(radius_range)):
+    for i in range(6, 7):
 
         print(f"working radius is {radius_range[i]}")
 
@@ -399,13 +432,13 @@ if __name__ == "__main__":
         params_source['radius'] = radius_range[i] 
         bnds = [[-0.2, 0.2], [-np.pi, np.pi]]
         overlap_optimized = overlap_sie(params_source = params_source, params_temp = initial_params_template)
-        overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, maxiter = 150)
+        overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, maxiter = 800)
         df_res.loc[i] = [radius_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1]]
         print(radius_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1])
         end = time.time()
         print(f'elapsed time: {(end - start)/60}')
     print(df_res)
-    df_res.to_csv(datPath + "overlap_lensing_sie_fourimages_sigma=6_theta=0_lenstemp.csv", index = False)
+    df_res.to_csv(datPath + "overlap_lensing_sie_fourimages_sigma=6_theta=60_lenstemp.csv", index = False)
     
 
 

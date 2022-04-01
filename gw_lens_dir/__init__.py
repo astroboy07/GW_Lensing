@@ -4,4 +4,4 @@ from gw_lens_dir.overlap_lensing_changed_param import overlap_dual_ann_lensing
 from gw_lens_dir.overlap_lensing_geo_wave import overlap_dual_ann_lensing_geo_wave
 from gw_lens_dir.overlap_lensing_sis import overlap_sis
 from gw_lens_dir.overlap_lensing_sie_twoimages import overlap_sie
-#from gw_lens_dir.overlap_lensing_sie_twoimages_trial import overlap_sie_basin, strains
+from gw_lens_dir.overlap_fourimages_lenstemp_check import overlap_sie_check
