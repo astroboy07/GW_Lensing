@@ -260,7 +260,24 @@ class overlap_sie_check():
         elif mu_arr[0] != 0 and mu_arr[1] != 0 and mu_arr[2] == mu_arr[3] == 0:
             F_source_sie_temp = np.sqrt(np.abs(mu_1)) * np.exp(2 * np.pi * 1j * f * td_1) - 1j * np.sqrt(np.abs(mu_2)) * np.exp(2 * np.pi * 1j * f * td_2)
             #print('IV')
+        else:
+            mu_arr = np.array(mu_arr)
+            td_arr = np.array(td_arr)
+            mu_arr_abs = np.abs(mu_arr)
+            mu_arr_min = np.max(mu_arr_abs[:2])
+            mu_arr_saddle = np.max(mu_arr_abs[2:])
+            index_1 = np.where(mu_arr_min == mu_arr_abs)
+            index_2 = np.where(mu_arr_saddle == mu_arr_abs)
+            mu_a = mu_arr[index_1]
+            mu_b = mu_arr[index_2]
+            td_a = td_arr[index_1]
+            td_b = td_arr[index_2]
+            F_source_sie_temp = np.sqrt(np.abs(mu_a)) * np.exp(2 * np.pi * 1j * f * td_a) - 1j * np.sqrt(np.abs(mu_b)) * np.exp(2 * np.pi * 1j * f * td_b)
+            print(mu_arr, td_arr)
+            print(mu_arr_min, mu_arr_saddle)
+            print(index_1, index_2)
 
+        '''
         # for [1, 2, 3, 4] case
         else:
             mu_arr = np.array(mu_arr)
@@ -279,6 +296,8 @@ class overlap_sie_check():
             #print(mu_arr, td_arr)
             #print(mu_a, mu_b)
             #print(td_a, td_b)
+        '''
+        
         return F_source_sie_temp[0]
 
     def Sn(self, f):
@@ -440,7 +459,7 @@ if __name__ == "__main__":
     radius_range = np.array(df_data['source_x'])
 
     start = time.time()
-    for i in range(6, 7):
+    for i in range(16, 17):
 
         print(f"working radius is {radius_range[i]}")
 
@@ -472,17 +491,17 @@ if __name__ == "__main__":
         #print(f'elapsed time: {(end - start)/60}')
     #amplitude
     
-    plt.plot(freq, np.abs(signal_source), label = 'source', ls = '--')
-    plt.plot(freq, np.abs(signal_temp), label = 'template', ls = '--')
+    #plt.plot(freq, np.abs(signal_source), label = 'source', ls = '--')
+    #plt.plot(freq, np.abs(signal_temp), label = 'template', ls = '--')
 
     # phase
     # plt.plot(freq, np.arctan2(np.imag(signal_source), np.real(signal_source)), label = 'source')
     # plt.plot(freq, np.arctan2(np.imag(signal_temp), np.real(signal_temp)), label = 'template')
 
     #integrands
-    # plt.plot(freq, np.abs(integrand_1), label = 'integrand_1')
-    # plt.plot(freq, np.abs(integrand_2), label = 'integrand_2')
-    # plt.plot(freq, np.abs(integrand_3), label = 'integrand_3')
+    plt.plot(freq, np.abs(integrand_1), label = 'integrand_1')
+    plt.plot(freq, np.abs(integrand_2), label = 'integrand_2')
+    plt.plot(freq, np.abs(integrand_3), label = 'integrand_3')
 
     plt.legend()
     plt.show()
