@@ -242,10 +242,10 @@ def radial_distance_caustics(values, theta):
             images_num[i] = run_glafic(values)[0, 0]
             #print(radius[i], images_num[i])
             df_radial_distance.loc[i] = [radius[i], images_num[i]]
-
+    '''
     elif theta > 86 and theta < 90:
-        source_x_range = np.linspace(0.0, 5.0e-5, 400)
-        source_y_range = np.linspace(0.0, 5.0e-5, 400)
+        source_x_range = np.linspace(0.0, 5.0e-4, 300)
+        source_y_range = np.linspace(0.0, 5.0e-4, 300)
         images_num = np.zeros_like(source_x_range)
         radius = np.zeros_like(source_x_range)
         for i in range(len(source_y_range)):
@@ -259,7 +259,7 @@ def radial_distance_caustics(values, theta):
             images_num[i] = run_glafic(values)[0, 0]
             #print(values['source_x'], values['source_y'], images_num[i])
             df_radial_distance.loc[i] = [radius[i], images_num[i]]
-
+    '''
     else:
         for i in range(len(source_x_range)):
             values = initial_values
@@ -267,7 +267,7 @@ def radial_distance_caustics(values, theta):
             values['source_y'] = source_x_range[i] * np.tan(float(theta) * (np.pi / 180))
             radius[i] = np.sqrt(values['source_x'] ** 2 + values['source_y'] ** 2)
             images_num[i] = run_glafic(values)[0, 0]
-            #print(radius[i], images_num[i])
+            print(values['source_x'], values['source_y'], images_num[i])
             df_radial_distance.loc[i] = [radius[i], images_num[i]]
     
     caustic_in = []
@@ -305,12 +305,12 @@ initial_values = {'lens_z':0.5,
                 'lens_sigma': 6, 
                 'lens_x': 0.0, 
                 'lens_y': 0.0, 
-                'lens_ellip': 0.2, 
+                'lens_ellip': 0.4, 
                 'lens_theta': 0.0,
                 'lens_r_core': 0.0,
                 'source_z': 1.0,
                 'source_x': 0., #r * np.cos(float(theta) * (np.pi / 180)),
-                'source_y': 0 #r * np.sin(float(theta) * (np.pi / 180))
+                'source_y': 0. #r * np.sin(float(theta) * (np.pi / 180))
                 }
 
 #print(run_glafic(initial_values))
@@ -321,13 +321,13 @@ initial_values = {'lens_z':0.5,
 
 
 start = time.time()
-theta_range = np.linspace(45, 90, 30)
+theta_range = np.linspace(88, 90, 1)
 df_get_radial_distance = pd.DataFrame(columns=('theta', 'caustic_in', 'caustic_out'))
 for i in range(len(theta_range)):
     theta, inner_caustic, outer_caustic = radial_distance_caustics(initial_values, theta_range[i])
     print(i, theta, inner_caustic, outer_caustic)
     df_get_radial_distance.loc[i] = [theta, inner_caustic, outer_caustic]
-df_get_radial_distance.to_csv(datadirName + "radial_distance_caustics_e=0.2.csv", index = False)
+#df_get_radial_distance.to_csv(datadirName + "radial_distance_caustics_e=0.4_final.csv", index = False)
 end = time.time()
 
 print(f'time elapsed {(end - start) / 60}')
