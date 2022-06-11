@@ -219,6 +219,21 @@ class overlap_sis():
         F_val_source_sis = np.complex128(pre_factor * series_sum, dtype = np.complex128)
 
         return F_val_source_sis
+
+    def F_source_pm(self, f):
+        
+        w = 8 * np.pi * self.M_lz_source * f
+        x_m = 0.5 * (self.y_source + np.sqrt(self.y_source**2 + 4))
+        phi_m = np.power((x_m - self.y_source) , 2) / 2 - np.log(x_m)
+
+        first_term = np.exp(np.pi * w / 4 + 1j * (w / 2) * (np.log(w / 2) - 2 * phi_m)) 
+        second_term = sc.gamma(1 - 1j * (w / 2)) 
+        third_term = mp.hyp1f1(1j * w / 2, 1, 1j * (w / 2) * (self.y_source**2), maxterms = 10**6)
+
+        F_val_pm_temp = first_term * second_term * third_term
+        F_val_pm = np.complex128(F_val_pm_temp, dtype = np.complex128)
+
+        return F_val_pm
     
     def F_geo_source_sis(self, f):
         '''computes the amplification factor for source SIS lens in the geometrical optics limit.
@@ -290,7 +305,7 @@ class overlap_sis():
             self.phi_0
         )
         
-        amp_factor_source_pm = self.F_source_sis(f)
+        amp_factor_source_pm = self.F_source_pm(f)
 
         return hI_source * amp_factor_source_pm
     
@@ -354,60 +369,31 @@ class overlap_sis():
 
         t_c = x[0]
         phi_c = x[1]
+    
+        num_temp, num_err = sp.integrate.quad(
+            self.integrand_num_wo, 
+            self.limit(self.params_source, self.params_temp)[0], 
+            self.limit(self.params_source, self.params_temp)[1], 
+            args = (t_c, phi_c)
+        )
 
-        if self.time_del() > 0.05:
+        deno_temp_1, deno_temp_err_1 = sp.integrate.quad(
+            self.integrand_deno_1_wo,
+            self.limit(self.params_source, self.params_temp)[0], 
+            self.limit(self.params_source, self.params_temp)[2], 
+            args = (t_c, phi_c)
+        )
 
-            num_temp, num_err = sp.integrate.quad(
-                self.integrand_num_go, 
-                self.limit(self.params_source, self.params_temp)[0], 
-                self.limit(self.params_source, self.params_temp)[1], 
-                args = (t_c, phi_c)
-            )
-
-            deno_temp_1, deno_temp_err_1 = sp.integrate.quad(
-                self.integrand_deno_1_go,
-                self.limit(self.params_source, self.params_temp)[0], 
-                self.limit(self.params_source, self.params_temp)[2], 
-                args = (t_c, phi_c)
-            )
-
-            deno_temp_2, deno_temp_err_2 = sp.integrate.quad(
-                self.integrand_deno_2,
-                self.limit(self.params_source, self.params_temp)[0], 
-                self.limit(self.params_source, self.params_temp)[3], 
-                args = (t_c, phi_c)
-            )
-            num = 4 * np.real(num_temp)
-            deno = np.sqrt((4 * np.real(deno_temp_1)) * (4 * np.real(deno_temp_2)))
-            overlap_temp = num / deno
-            #print(f"time delay is {self.time_del()} so geo optics")
-        
-        elif self.time_del() < 0.05:
-            
-            num_temp, num_err = sp.integrate.quad(
-                self.integrand_num_wo, 
-                self.limit(self.params_source, self.params_temp)[0], 
-                self.limit(self.params_source, self.params_temp)[1], 
-                args = (t_c, phi_c)
-            )
-
-            deno_temp_1, deno_temp_err_1 = sp.integrate.quad(
-                self.integrand_deno_1_wo,
-                self.limit(self.params_source, self.params_temp)[0], 
-                self.limit(self.params_source, self.params_temp)[2], 
-                args = (t_c, phi_c)
-            )
-
-            deno_temp_2, deno_temp_err_2 = sp.integrate.quad(
-                self.integrand_deno_2,
-                self.limit(self.params_source, self.params_temp)[0], 
-                self.limit(self.params_source, self.params_temp)[3], 
-                args = (t_c, phi_c)
-            )
-            num = 4 * np.real(num_temp)
-            deno = np.sqrt((4 * np.real(deno_temp_1)) * (4 * np.real(deno_temp_2)))
-            overlap_temp = num / deno
-            #print(f"time delay is {self.time_del()} so wave optics")
+        deno_temp_2, deno_temp_err_2 = sp.integrate.quad(
+            self.integrand_deno_2,
+            self.limit(self.params_source, self.params_temp)[0], 
+            self.limit(self.params_source, self.params_temp)[3], 
+            args = (t_c, phi_c)
+        )
+        num = 4 * np.real(num_temp)
+        deno = np.sqrt((4 * np.real(deno_temp_1)) * (4 * np.real(deno_temp_2)))
+        overlap_temp = num / deno
+        #print(f"time delay is {self.time_del()} so wave optics")
 
         return -1 * overlap_temp
 
@@ -424,8 +410,8 @@ initial_params_source = {
     'phi_s_source' : 0.0, 
     'theta_l_source' : 0.0, 
     'phi_l_source' : 0.0, 
-    'mcz_source' : 18.79 * solar_mass, 
-    'dist_source': 1.58 * giga_parsec, 
+    'mcz_source' : 20 * solar_mass, 
+    'dist_source': 1 * giga_parsec, 
     'eta_source' : 0.25, 
     't0' : 0.0, 
     'phi_0' : 0.0,
@@ -438,8 +424,8 @@ initial_params_template = {
     'phi_s_temp' : 0.0, 
     'theta_l_temp' : 0.0, 
     'phi_l_temp' : 0.0, 
-    'mcz_temp' : 18.79 * solar_mass, 
-    'dist_temp': 1.58 * giga_parsec, 
+    'mcz_temp' : 20 * solar_mass, 
+    'dist_temp': 1 * giga_parsec, 
     'eta_temp' : 0.25, 
     #'tc' : 0.0, 
     #'phi_c' : 0.0,
@@ -455,7 +441,9 @@ if __name__ == "__main__":
 
     datPath = "/Users/saifali/Desktop/gwlensing/data/"
     start = time.time()
-    M_lz_source_range = np.logspace(4.2, 5, 3) * solar_mass
+
+    y_source_range = np.array([0.2, 0.3, 0.4])
+    M_lz_source_range = np.array([2260 * solar_mass, 1510 * solar_mass, 1119 * solar_mass])
     #M_lz_source_range = my_lin(1e2 * solar_mass, 5e4 * solar_mass, 3)
     #I_range = np.linspace(0.1, 1, 20)
     df_res = pd.DataFrame(columns=('M_lz', 'overlap', 'tc', 'phi_c'))
@@ -466,14 +454,15 @@ if __name__ == "__main__":
 
         params_source = initial_params_source
         params_template = initial_params_template
-        params_source['M_lz_source'] = M_lz_source_range[i] 
+        params_source['M_lz_source'] = M_lz_source_range[i]
+        params_source['y_source'] = y_source_range[i] 
         bnds = [[-0.2, 0.2], [-np.pi, np.pi]]
         overlap_optimized = overlap_sis(params_source = params_source, params_temp = initial_params_template)
         overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, maxiter = 80)
-        df_res.loc[i] = [M_lz_source_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1]]
+        #df_res.loc[i] = [y_source_range[i], M_lz_source_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1]]
         end = time.time()
         print(M_lz_source_range[i], np.abs(overlap_max.fun), overlap_max.x[0], overlap_max.x[1])
         print(f'elapsed time: {(end - start)/60}')
-    print(df_res)
-    df_res.to_csv(datPath + "overlap_sis_ml_y=0.5_mcz=18.79.csv", index = False)
+    #print(df_res)
+    #df_res.to_csv(datPath + "overlap_pm_bigdip_troughs.csv", index = False)
     

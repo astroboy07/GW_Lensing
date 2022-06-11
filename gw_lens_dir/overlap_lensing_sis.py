@@ -508,13 +508,13 @@ initial_params_source = {
     'phi_s_source' : 0.0, 
     'theta_l_source' : 0.0, 
     'phi_l_source' : 0.0, 
-    'mcz_source' : 18.79 * solar_mass, 
-    'dist_source': 1.58 * giga_parsec, 
+    'mcz_source' : 20 * solar_mass, 
+    'dist_source': 1 * giga_parsec, 
     'eta_source' : 0.25, 
     't0' : 0.0, 
     'phi_0' : 0.0,
-    'M_lz_source':1e2 * solar_mass,
-    'y_source': 0.5
+    'M_lz_source': 2260 * solar_mass,
+    'y_source': 0.2
 }
 
 initial_params_template = {
@@ -522,8 +522,8 @@ initial_params_template = {
     'phi_s_temp' : 0.0, 
     'theta_l_temp' : 0.0, 
     'phi_l_temp' : 0.0, 
-    'mcz_temp' : 18.79 * solar_mass, 
-    'dist_temp': 1.58 * giga_parsec, 
+    'mcz_temp' : 20 * solar_mass, 
+    'dist_temp': 1 * giga_parsec, 
     'eta_temp' : 0.25, 
     #'tc' : 0.0, 
     #'phi_c' : 0.0,
@@ -541,7 +541,7 @@ def overlap_multiprocessed_lensing(M_lz_source_range, return_dict):
     params_source = initial_params_source
     params_source['M_lz_source'] = M_lz_source_range
     overlap_optimized = overlap_sis(params_source = params_source, params_temp = initial_params_template)
-    overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, seed = 42)
+    overlap_max = dual_annealing(overlap_optimized.overlap, bounds = bnds, seed = 42, maxiter = 100)
 
     return_dict[M_lz_source_range] = [overlap_max.fun, overlap_max.x[0], overlap_max.x[1]]
     
@@ -554,8 +554,8 @@ if __name__ == "__main__":
     return_dict = manager.dict()
     processes = []
     
-    #M_lz_source_range = np.linspace(0.5e1 * solar_mass, 1e2 * solar_mass, 10)
-    M_lz_source_range = my_lin(1e2 * solar_mass, 1e4 * solar_mass, 15)
+    M_lz_source_range = np.linspace(2260 * solar_mass, 1e2 * solar_mass, 1)
+    #M_lz_source_range = my_lin(1e2 * solar_mass, 1e4 * solar_mass, 15)
     #I_range = np.linspace(0.1, 1, 20)
 
     for M_lz_source in M_lz_source_range:
@@ -567,7 +567,7 @@ if __name__ == "__main__":
     for proc in processes:
         proc.join()
 
-    w = csv.writer(open(datPath + "overlap_sis_ml_y=0.5_mcz=18.79.csv", "w"))
+    w = csv.writer(open(datPath + "overlap_sis_bigdip_ml_2260_sol.csv", "w"))
     for key, value in return_dict.items():
         w.writerow([key, value])
     

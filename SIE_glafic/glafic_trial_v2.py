@@ -72,7 +72,16 @@ class glafic_trial():
         else:
             # mu_1, mu_2, td_1, td_2
             return output[1, 2], output[2, 2], output[1, 3], output[2, 3]
+    
+    def get_einstein_radius(self):
+
+        output = self.run_glafic()
+        data_einstein = 'out_ein2.dat'
+        output_einstein = np.loadtxt(data_einstein)
         
+        # return einstein radius (arcseconds) and mass inside einstein radius (solar_mass / h)
+        return np.array([output_einstein[-2], output_einstein[-1]])
+
     def sort_fourimgs(self):
 
         fourimgs = np.array(self.magnifications())
@@ -153,7 +162,7 @@ class glafic_trial():
             return np.array([])
             
 
-def go_fourimages_counts(num_pts = 10):
+def go_fourimages_counts(num_pts = 6000):
 
     # parameters for glafic
     iniitial_glafic_params = {'lens_z':0.5, 
@@ -172,26 +181,26 @@ def go_fourimages_counts(num_pts = 10):
     source_x_min = 0.0
     source_y_min = 0.0
 
-    # for sigma = 6 km/s
-    source_x_max = 0.31e-4
-    source_y_max = 0.31e-4
+    ## for sigma = 6 km/s
+    source_x_max = 0.9e-4
+    source_y_max = 0.9e-4
 
     source_x_range = source_x_max - source_x_min
     source_y_range = source_y_max - source_y_min
 
     source_x = np.linspace(source_x_min, source_x_max, num_pts)
     source_y = np.linspace(source_y_min, source_y_max, num_pts)
-    source_xx, source_yy = np.meshgrid(source_x, source_y)
-    source_xx = source_xx.flatten()
-    source_yy = source_yy.flatten()
+    # source_xx, source_yy = np.meshgrid(source_x, source_y)
+    # source_xx = source_xx.flatten()
+    # source_yy = source_yy.flatten()
     data = pd.DataFrame(columns = ('source_x', 'source_y', 'mu_1', 'mu_2', 'mu_3', 'mu_4', 'td_1', 'td_2', 'td_3', 'td_4'))
-    for i in range(source_xx.shape[0]):
+    for i in range(source_x.shape[0]):
         glafic_params = iniitial_glafic_params
-        # source_x_rand = source_x_min + source_x_range * random.random()
-        # source_y_rand = source_y_min + source_y_range * random.random()
+        source_x_rand = source_x_min + source_x_range * random.random()
+        source_y_rand = source_y_min + source_y_range * random.random()
 
-        glafic_params['source_x'] = source_xx[i]
-        glafic_params['source_y'] = source_yy[i]
+        glafic_params['source_x'] = source_x_rand
+        glafic_params['source_y'] = source_y_rand
         glafic_init = glafic_trial(glafic_params)
         sorted_go_4imgs = glafic_init.geo_opt_fourimgs()
         #print(f'sorted go 4imgs: {sorted_go_4imgs}')
@@ -201,13 +210,13 @@ def go_fourimages_counts(num_pts = 10):
         else:
             data.loc[i] = [glafic_params['source_x'], glafic_params['source_y'], sorted_go_4imgs[0], sorted_go_4imgs[1], sorted_go_4imgs[2], sorted_go_4imgs[3], sorted_go_4imgs[4], 
                         sorted_go_4imgs[5], sorted_go_4imgs[6], sorted_go_4imgs[7]]
-    data.to_csv(CORE_DIRNAME + GLAFIC_DIRNAME + 'monte_carlo_go_4images_mismatch.csv', index = False)
+    data.to_csv(CORE_DIRNAME + GLAFIC_DIRNAME + 'monte_carlo_go_4images.csv', index = False)
     print(data)
 
 '''
 # Call the class glafic_trial
 glafic_params = {'lens_z':0.5, 
-                'lens_sigma': 6, 
+                'lens_sigma': 8, 
                 'lens_x': 0.0, 
                 'lens_y': 0.0, 
                 'lens_ellip': 0.2, 
@@ -215,12 +224,13 @@ glafic_params = {'lens_z':0.5,
                 'lens_r_core': 0.0,
                 'source_z': 1.0,
                 'source_x': 0.,
-                'source_y': 0.12e-4
+                'source_y': 0.
                 }
 
 
 glafic_init = glafic_trial(glafic_params)
-# print(glafic_init.run_glafic())
+print(glafic_init.run_glafic())
+print(f'Einstein radius and mass inside it:{get_einstein_radius(values = initial_values)}')
 # print(glafic_init.magnifications(), '\n')
 # print(glafic_init.sort_fourimgs())
 # print(glafic_init.geo_opt_fourimgs())
