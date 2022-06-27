@@ -258,7 +258,29 @@ class overlap_sis():
         else:
             F_geo_val_source_pm = self.mag()[1]
 
-        return F_geo_val_source_pm  
+        return F_geo_val_source_pm
+
+    def F_geo_source_pm(self, f):
+        '''computes the amplification factor for source point mass lens in the geometrical optics limit.
+
+        Parameters
+        ----------
+        f : float
+            frequency
+
+        y : float
+            source position
+
+        Return
+        ----------
+        F_val : float, complex
+            Amplification factor for point mass
+        '''
+        self.flux_ratio = 0.6
+        self.td = 0.0265
+        F_geo_val_source_pm = 1 - 1j * np.sqrt(self.flux_ratio) * np.exp(2 * np.pi * 1j * f * self.td)
+
+        return F_geo_val_source_pm    
 
     def Sn(self, f):
         """ ALIGO noise curve from arXiv:0903.0338
@@ -305,9 +327,9 @@ class overlap_sis():
             self.phi_0
         )
         
-        amp_factor_source_pm = self.F_source_pm(f)
+        amp_factor_source_sis = self.F_source_sis(f)
 
-        return hI_source * amp_factor_source_pm
+        return hI_source * amp_factor_source_sis
     
     def signal_source_go(self, f, t_c, phi_c): 
         
@@ -324,7 +346,7 @@ class overlap_sis():
             self.phi_0
         )
         
-        amp_factor_source_pm = self.F_geo_source_sis(f)
+        amp_factor_source_pm = self.F_geo_source_pm(f)
 
         return hI_source * amp_factor_source_pm
 
@@ -348,7 +370,15 @@ class overlap_sis():
     def integrand_num_wo(self, f, t_c, phi_c):
         integrand_num_wo = self.signal_source_wo(f, t_c, phi_c) * np.conjugate(self.signal_temp(f, t_c, phi_c)) / self.Sn(f)
         return integrand_num_wo
+    #################################
+    def integrand_num_wo_real(self, f, t_c, phi_c):
+        integrand_num_wo = self.signal_source_wo(f, t_c, phi_c) * np.conjugate(self.signal_temp(f, t_c, phi_c)) / self.Sn(f)
+        return np.real(integrand_num_wo)
     
+    def integrand_num_wo_imag(self, f, t_c, phi_c):
+        integrand_num_wo = self.signal_source_wo(f, t_c, phi_c) * np.conjugate(self.signal_temp(f, t_c, phi_c)) / self.Sn(f)
+        return np.imag(integrand_num_wo)
+    #################################
     def integrand_num_go(self, f, t_c, phi_c):
         integrand_num_go = self.signal_source_go(f, t_c, phi_c) * np.conjugate(self.signal_temp(f, t_c, phi_c)) / self.Sn(f)
         return integrand_num_go
@@ -394,8 +424,28 @@ class overlap_sis():
         deno = np.sqrt((4 * np.real(deno_temp_1)) * (4 * np.real(deno_temp_2)))
         overlap_temp = num / deno
         #print(f"time delay is {self.time_del()} so wave optics")
-
+        
         return -1 * overlap_temp
+    
+    def overlap_num(self, x):
+        t_c = x[0]
+        phi_c = x[1]
+
+        num_temp_real, num_err_real = sp.integrate.quad(
+            self.integrand_num_wo_real, 
+            self.limit(self.params_source, self.params_temp)[0], 
+            self.limit(self.params_source, self.params_temp)[1], 
+            args = (t_c, phi_c)
+        )
+
+        num_temp_imag, num_err_imag = sp.integrate.quad(
+            self.integrand_num_wo_imag, 
+            self.limit(self.params_source, self.params_temp)[0], 
+            self.limit(self.params_source, self.params_temp)[1], 
+            args = (t_c, phi_c)
+        )
+
+        return num_temp_real + 1j * num_temp_imag
 
 """
 Trying the multiprocessing 
@@ -404,6 +454,14 @@ Trying the multiprocessing
 solar_mass = 4.92624076 * 10**-6 #[solar_mass] = sec
 giga_parsec = 1.02927125 * 10**17 #[giga_parsec] = sec
 year = 31557600 #[year] = sec
+
+def invert_lensparam_to_sis(I, td):
+    y = (1 - I) / (1 + I)
+    ML = td / (8 * y)  
+    return y, ML
+
+y, ML = invert_lensparam_to_sis(0.2, 0.0182)    
+
 
 initial_params_source = {
     'theta_s_source' : 0.0, 
@@ -415,8 +473,8 @@ initial_params_source = {
     'eta_source' : 0.25, 
     't0' : 0.0, 
     'phi_0' : 0.0,
-    'M_lz_source':1e2 * solar_mass,
-    'y_source': 0.5
+    'M_lz_source': ML,
+    'y_source': y
 }
 
 initial_params_template = {
