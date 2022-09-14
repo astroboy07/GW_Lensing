@@ -304,7 +304,7 @@ def get_einstein_radius(values):
 ################################################################################################################################################################
 
 initial_values = {'lens_z':0.5, 
-                'lens_sigma': 8, 
+                'lens_sigma': 4, 
                 'lens_x': 0.0, 
                 'lens_y': 0.0, 
                 'lens_ellip': 0.2, 
@@ -315,7 +315,7 @@ initial_values = {'lens_z':0.5,
                 'source_y': 0.
                 }
 
-# print(run_glafic(initial_values))
+#print(run_glafic(initial_values))
 # print(magnifications(values = initial_values))
 #radial_distance_caustics(values = initial_values, theta = 90)
 # print(f'Einstein radius and mass inside it:{get_einstein_radius(values = initial_values)}')

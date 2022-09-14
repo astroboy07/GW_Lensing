@@ -20,8 +20,8 @@ outformat_exp  1
 
 ## define lenses and sources
 startup 1 0 1
-lens sie 0.5 8 0.0 0.0 0.2 0.0 0.0 0.0
-point 1.0 0.0 0.0
+lens sie 0.5 4 0.0 0.0 0.2 0.0 0.0 0.0
+point 1.0 4e-05 4e-05
 end_startup
 
 ## execute commands

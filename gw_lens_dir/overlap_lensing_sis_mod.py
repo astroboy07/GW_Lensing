@@ -327,9 +327,9 @@ class overlap_sis():
             self.phi_0
         )
         
-        amp_factor_source_sis = self.F_source_sis(f)
+        amp_factor_source_pm = self.F_source_pm(f)
 
-        return hI_source * amp_factor_source_sis
+        return hI_source * amp_factor_source_pm
     
     def signal_source_go(self, f, t_c, phi_c): 
         
@@ -455,13 +455,6 @@ solar_mass = 4.92624076 * 10**-6 #[solar_mass] = sec
 giga_parsec = 1.02927125 * 10**17 #[giga_parsec] = sec
 year = 31557600 #[year] = sec
 
-def invert_lensparam_to_sis(I, td):
-    y = (1 - I) / (1 + I)
-    ML = td / (8 * y)  
-    return y, ML
-
-y, ML = invert_lensparam_to_sis(0.2, 0.0182)    
-
 
 initial_params_source = {
     'theta_s_source' : 0.0, 
@@ -473,8 +466,8 @@ initial_params_source = {
     'eta_source' : 0.25, 
     't0' : 0.0, 
     'phi_0' : 0.0,
-    'M_lz_source': ML,
-    'y_source': y
+    'M_lz_source': 2253 * solar_mass,
+    'y_source': 0.2
 }
 
 initial_params_template = {
